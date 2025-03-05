@@ -45,16 +45,14 @@ var tasks = map[string]Task{
 // ...
 
 func getTasks(w http.ResponseWriter, r *http.Request) {
-	for _, task := range tasks {
-		resp, err := json.Marshal(task)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write(resp)
+	resp, err := json.Marshal(tasks)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(resp)
 
 }
 
@@ -72,7 +70,10 @@ func postTasks(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	if _, ok := tasks[task.ID]; ok {
+		http.Error(w, "Запись с таким ID уже существует", http.StatusBadRequest)
+		return
+	}
 	tasks[task.ID] = task
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -93,7 +94,7 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(resp)
+	_, _ = w.Write(resp)
 }
 
 func deleteTask(w http.ResponseWriter, r *http.Request) {
